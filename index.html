@@ -1,523 +1,51 @@
-here<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ستوديو اف تسعين | F90 Music Studio</title>
-    <meta name="description" content="F90 Music Studio - Professional Arabic Music Studio">
-    
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#000000">
-    
-    <!-- Icons -->
-    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Styles -->
-    <link rel="stylesheet" href="css/main.css">
-    
-    <!-- Language Detection -->
-    <script>
-        // Auto-detect language
-        const userLang = navigator.language || navigator.userLanguage;
-        const defaultLang = userLang.startsWith('ar') ? 'ar' : 'en';
-        document.documentElement.lang = defaultLang;
-        document.documentElement.dir = defaultLang === 'ar' ? 'rtl' : 'ltr';
-    </script>
-</head>
-<body>
-    <!-- Loading Screen -->
-    <div id="loading-screen" class="loading-screen">
-        <div class="loading-logo">F90</div>
-        <div class="loading-bar">
-            <div class="loading-progress"></div>
-        </div>
-    </div>
+<!-- Add fallback content in the head -->
+<noscript>
+    <style>
+        .noscript-fallback { display: block !important; }
+        .page { display: none !important; }
+    </style>
+</noscript>
 
-    <!-- Header -->
-    <header class="header" id="header">
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <h1>F90</h1>
-                    <span>Music Studio</span>
-                </div>
-                
-                <nav class="nav" id="nav">
-                    <ul class="nav-list">
-                        <li><a href="#home" data-page="home" class="nav-link active">الرئيسية</a></li>
-                        <li><a href="#music" data-page="music" class="nav-link">الموسيقى</a></li>
-                        <li><a href="#playlists" data-page="playlists" class="nav-link">قوائم التشغيل</a></li>
-                        <li><a href="#studio" data-page="studio" class="nav-link">الستوديو</a></li>
-                        <li><a href="#requests" data-page="requests" class="nav-link">طلبات الأغاني</a></li>
-                        <li><a href="#about" data-page="about" class="nav-link">من نحن</a></li>
-                        <li><a href="#contact" data-page="contact" class="nav-link">اتصل بنا</a></li>
-                    </ul>
-                </nav>
-                
-                <div class="header-actions">
-                    <button class="language-switcher" id="language-switcher">
-                        <span class="lang-ar">العربية</span>
-                        <span class="lang-en">English</span>
-                    </button>
-                    <button class="menu-toggle" id="menu-toggle">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </button>
-                </div>
+<!-- Add to body -->
+<noscript class="noscript-fallback">
+    <div class="noscript-content">
+        <h1>🎵 F90 Music Studio</h1>
+        <p>يرجى تفعيل JavaScript للاستمتاع بتجربة الموسيقى الكاملة</p>
+        <div class="noscript-tracks">
+            <div class="track-fallback">
+                <h3>أغنية عربية حديثة - F90 Studio</h3>
+                <p>أحدث إنتاجاتنا الموسيقية</p>
             </div>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="main" id="main">
-        <!-- Home Page -->
-        <section id="home" class="page active">
-            <div class="hero">
-                <div class="hero-background">
-                    <div class="hero-image studio-hero"></div>
-                    <div class="hero-overlay"></div>
-                </div>
-                <div class="container">
-                    <div class="hero-content">
-                        <h1 class="hero-title">ستوديو اف تسعين</h1>
-                        <p class="hero-subtitle">استمتع بأحدث الأغاني والموسيقى العربية</p>
-                        <button class="cta-button" onclick="navigateToPage('music')">
-                            <span>استمع الآن</span>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <path d="M8 5v14l11-7z" fill="currentColor"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <section class="section">
-                <div class="container">
-                    <h2 class="section-title">أحدث الأغاني</h2>
-                    <div class="tracks-grid" id="latest-tracks">
-                        <!-- Dynamic content -->
-                    </div>
-                </div>
-            </section>
-
-            <section class="section">
-                <div class="container">
-                    <h2 class="section-title">الأعلى تقييماً</h2>
-                    <div class="tracks-grid" id="top-rated-tracks">
-                        <!-- Dynamic content -->
-                    </div>
-                </div>
-            </section>
-
-            <section class="section studio-gallery">
-                <div class="container">
-                    <h2 class="section-title">معرض الستوديو</h2>
-                    <div class="gallery-grid">
-                        <div class="gallery-item">
-                            <div class="gallery-image studio-1"></div>
-                            <div class="gallery-overlay">
-                                <span>غرفة التسجيل</span>
-                            </div>
-                        </div>
-                        <div class="gallery-item">
-                            <div class="gallery-image studio-2"></div>
-                            <div class="gallery-overlay">
-                                <span>طاولة الميكساج</span>
-                            </div>
-                        </div>
-                        <div class="gallery-item">
-                            <div class="gallery-image studio-3"></div>
-                            <div class="gallery-overlay">
-                                <span>المايكروفونات</span>
-                            </div>
-                        </div>
-                        <div class="gallery-item">
-                            <div class="gallery-image studio-4"></div>
-                            <div class="gallery-overlay">
-                                <span>الإضاءة المسرحية</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </section>
-
-        <!-- Music Page -->
-        <section id="music" class="page">
-            <div class="container">
-                <div class="page-header">
-                    <h1 class="page-title">الموسيقى</h1>
-                    <div class="search-filter">
-                        <div class="search-box">
-                            <input type="text" id="search-input" placeholder="ابحث عن أغنية...">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" stroke-width="2"/>
-                            </svg>
-                        </div>
-                        <div class="filter-controls">
-                            <select id="playlist-filter">
-                                <option value="">جميع القوائم</option>
-                                <option value="playlist1">قائمة التشغيل 1</option>
-                                <option value="playlist2">قائمة التشغيل 2</option>
-                                <option value="playlist3">قائمة التشغيل 3</option>
-                            </select>
-                            <select id="sort-filter">
-                                <option value="newest">الأحدث</option>
-                                <option value="oldest">الأقدم</option>
-                                <option value="title">العنوان</option>
-                                <option value="rating">الأعلى تقييماً</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="tracks-list" id="tracks-list">
-                    <!-- Dynamic content -->
-                </div>
-            </div>
-        </section>
-
-        <!-- Playlists Page -->
-        <section id="playlists" class="page">
-            <div class="container">
-                <h1 class="page-title">قوائم التشغيل</h1>
-                <div class="playlists-grid" id="playlists-grid">
-                    <!-- Dynamic content -->
-                </div>
-            </div>
-        </section>
-
-        <!-- Studio Page -->
-        <section id="studio" class="page">
-            <div class="container">
-                <div class="studio-header">
-                    <h1 class="page-title">الستوديو</h1>
-                    <div class="studio-image studio-main"></div>
-                </div>
-                <div class="studio-content">
-                    <div class="studio-features">
-                        <h2>تجهيزات الستوديو</h2>
-                        <div class="features-grid">
-                            <div class="feature-item">
-                                <div class="feature-icon">🎤</div>
-                                <h3>مايكروفونات احترافية</h3>
-                                <p>أحدث المايكروفونات لجودة صوت مثالية</p>
-                            </div>
-                            <div class="feature-item">
-                                <div class="feature-icon">🎛️</div>
-                                <h3>طاولة ميكساج</h3>
-                                <p>أجهزة ميكساج حديثة لتعديل الصوت</p>
-                            </div>
-                            <div class="feature-item">
-                                <div class="feature-icon">🎧</div>
-                                <h3>سماعات راقية</h3>
-                                <p>سماعات مراقبة لتحليل دقيق للصوت</p>
-                            </div>
-                            <div class="feature-item">
-                                <div class="feature-icon">🎬</div>
-                                <h3>إضاءة احترافية</h3>
-                                <p>نظام إضاءة متكامل للتصوير</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Requests Page -->
-        <section id="requests" class="page">
-            <div class="container">
-                <h1 class="page-title">طلبات الأغاني</h1>
-                <div class="requests-content">
-                    <div class="request-form">
-                        <h2>اطلب أغنيتك المفضلة</h2>
-                        <form id="song-request-form">
-                            <div class="form-group">
-                                <label for="requester-name">الاسم</label>
-                                <input type="text" id="requester-name" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="song-request">اسم الأغنية أو الرابط</label>
-                                <textarea id="song-request" rows="4" required placeholder="اكتب اسم الأغنية أو أرسل رابطها على يوتيوب..."></textarea>
-                            </div>
-                            <div class="form-actions">
-                                <button type="submit" class="submit-button">
-                                    <span>إرسال الطلب</span>
-                                </button>
-                                <div class="contact-alternatives">
-                                    <p>أو تواصل معنا مباشرة:</p>
-                                    <a href="https://wa.me/970568181910" class="whatsapp-link" target="_blank">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zM17.4 15.35c-.25.73-1.43 1.34-2.03 1.42-.56.08-1.28.11-2.1-.12-.48-.14-1.1-.33-1.9-.66-.35-.14-.75-.33-1.19-.58-.39-.22-.73-.45-1.02-.68-.45-.35-.85-.75-1.19-1.19-.33-.42-.65-.89-.95-1.4-.29-.5-.54-1.05-.75-1.64-.2-.58-.36-1.2-.48-1.85-.12-.65-.18-1.32-.18-2 0-.68.06-1.35.18-2 .12-.65.28-1.27.48-1.85.21-.59.46-1.14.75-1.64.3-.51.62-.98.95-1.4.34-.44.74-.84 1.19-1.19.29-.23.63-.46 1.02-.68.44-.25.84-.44 1.19-.58.8-.33 1.42-.52 1.9-.66.82-.23 1.54-.2 2.1-.12.6.08 1.78.69 2.03 1.42.25.73.33 1.46.25 2.18-.08.72-.29 1.42-.62 2.1-.33.68-.76 1.32-1.28 1.9-.52.58-1.12 1.1-1.8 1.55-.68.45-1.42.82-2.22 1.1-.8.28-1.65.47-2.55.58-.9.11-1.84.14-2.82.09.98.05 1.92.02 2.82-.09.9-.11 1.75-.3 2.55-.58.8-.28 1.54-.65 2.22-1.1.68-.45 1.28-.97 1.8-1.55.52-.58.95-1.22 1.28-1.9.33-.68.54-1.38.62-2.1.08-.72 0-1.45-.25-2.18z"/>
-                                        </svg>
-                                        واتساب: +970568181910
-                                    </a>
-                                    <a href="mailto:f90gimme@gmail.com" class="email-link">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-                                        </svg>
-                                        بريد إلكتروني: f90gimme@gmail.com
-                                    </a>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- About Page -->
-        <section id="about" class="page">
-            <div class="container">
-                <div class="about-header">
-                    <h1 class="page-title">من نحن</h1>
-                    <div class="about-image studio-about"></div>
-                </div>
-                <div class="about-content">
-                    <div class="about-text">
-                        <h2>ستوديو اف تسعين</h2>
-                        <p>نحن ستوديو موسيقى عربي متخصص في إنتاج وتسجيل الأغاني العربية الحديثة. تأسس ستوديو F90 بهدف تقديم موسيقى عربية عالية الجودة تلبي أذواق الجمهور العربي في جميع أنحاء العالم.</p>
-                        
-                        <h3>رؤيتنا</h3>
-                        <p>نطمح إلى أن نكون منصة الموسيقى العربية الرائدة، حيث نجمع بين التكنولوجيا الحديثة والفن العربي الأصيل لخلق تجربة موسيقية فريدة.</p>
-                        
-                        <h3>مهمتنا</h3>
-                        <p>تقديم محتوى موسيقي عربي متنوع وعالي الجودة، مع تسهيل وصول المستمعين إلى أغانيهم المفضلة بطريقة سهلة وممتعة.</p>
-                        
-                        <h3>قيمنا</h3>
-                        <ul>
-                            <li>الجودة: نسعى دائماً لتقديم أفضل جودة صوتية</li>
-                            <li>الإبداع: ندعم الفنانين والمبدعين العرب</li>
-                            <li>الوصولية: نجعل الموسيقى متاحة للجميع</li>
-                            <li>الاحترافية: نعمل بمعايير مهنية عالية</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Contact Page -->
-        <section id="contact" class="page">
-            <div class="container">
-                <h1 class="page-title">اتصل بنا</h1>
-                <div class="contact-content">
-                    <div class="contact-info">
-                        <h2>معلومات الاتصال</h2>
-                        <div class="contact-item">
-                            <h3>واتساب</h3>
-                            <p>+970568181910</p>
-                        </div>
-                        <div class="contact-item">
-                            <h3>البريد الإلكتروني</h3>
-                            <p>f90gimme@gmail.com</p>
-                        </div>
-                        <div class="social-links">
-                            <h3>تابعنا على وسائل التواصل</h3>
-                            <div class="social-icons">
-                                <a href="https://youtube.com/@f90-music" target="_blank" class="social-icon youtube">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M10 15l5.19-3L10 9v6zm11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 5.5-4.5 10-10 10S2 17.5 2 12 6.5 2 12 2c2.2 0 4.2.8 5.8 2.3l-1.5 1.5C14.2 4.2 12.7 4 11 4c-4.4 0-8 3.6-8 8s3.6 8 8 8 8-3.6 8-8c0-.8-.1-1.5-.3-2.2-.2-.7-.5-1.3-.9-1.8z"/>
-                                    </svg>
-                                </a>
-                                <a href="https://www.instagram.com/f90_yt" target="_blank" class="social-icon instagram">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 01-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 017.8 2m-.2 2A3.6 3.6 0 004 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 003.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 110 2.5 1.25 1.25 0 010-2.5M12 7a5 5 0 110 10 5 5 0 010-10zm0 2a3 3 0 100 6 3 3 0 000-6z"/>
-                                    </svg>
-                                </a>
-                                <a href="https://www.tiktok.com/@f90.business" target="_blank" class="social-icon tiktok">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M12.525.02c1.31-.02 2.61-.01 3.91.02 2.5.06 4.38.69 5.48 1.87 1.19 1.28 1.74 3.02 1.67 5.07-.07 2.04-.74 3.77-2.05 5.02-1.32 1.25-3.14 1.9-5.47 1.92-1.33.02-2.66-.01-3.99-.02v-2.14c1.32.02 2.64.01 3.96.01 1.44-.01 2.49-.48 3.14-1.32.65-.84.88-1.92.81-3.12-.07-1.2-.4-2.28-1.19-3.08-.79-.8-1.88-1.2-3.32-1.19-1.31.01-2.62.01-3.93.01V.02zm0 7.97c1.3-.02 2.6-.01 3.9.02 1.44.03 2.58.48 3.24 1.32.66.84.92 1.92.87 3.12-.05 1.2-.37 2.28-1.15 3.08-.78.8-1.87 1.2-3.31 1.19-1.3-.01-2.6-.01-3.9-.01v-2.14c1.3.01 2.6.01 3.9.01 1.44.01 2.49-.48 3.14-1.32.65-.84.88-1.92.81-3.12-.07-1.2-.4-2.28-1.19-3.08-.79-.8-1.88-1.2-3.32-1.19-1.3.01-2.6.01-3.9.01V9.99c0-.55-.45-1-1-1s-1 .45-1 1v4.02c-1.31.01-2.61.01-3.92.01v-4.02c0-.55-.45-1-1-1s-1 .45-1 1v4.02c-1.3.01-2.6.01-3.9.01V8.98c0-.55.45-1 1-1s1 .45 1 1v.01z"/>
-                                    </svg>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="contact-map">
-                        <div class="map-placeholder">
-                            <div class="map-icon">📍</div>
-                            <p>فلسطين - غزة</p>
-                            <p>الموقع الإلكتروني: F90 Music Studio</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Privacy Policy Page -->
-        <section id="privacy" class="page">
-            <div class="container">
-                <h1 class="page-title">سياسة الخصوصية</h1>
-                <div class="legal-content">
-                    <p>آخر تحديث: ديسمبر 2025</p>
-                    
-                    <h2>مقدمة</h2>
-                    <p>نحن في F90 Music Studio نحترم خصوصيتك ونلتزم بحماية معلوماتك الشخصية. توضح هذه السياسة كيفية جمعنا لبياناتك واستخدامنا لها.</p>
-                    
-                    <h2>المعلومات التي نجمعها</h2>
-                    <p><strong>لا نجمع معلومات شخصية:</strong> موقعنا لا يتطلب إنشاء حسابات ولا يجمع معلومات شخصية مثل الأسماء أو عناوين البريد الإلكتروني.</p>
-                    <p><strong>التخزين المحلي:</strong> نستخدم LocalStorage فقط لتخزين تفضيلاتك المحلية مثل تقييمات الأغاني والتعليقات، وهذه البيانات تبقى على جهازك فقط.</p>
-                    
-                    <h2>ملفات تعريف الارتباط</h2>
-                    <p>نحن لا نستخدم ملفات تعريف الارتباط (Cookies) لتتبع نشاطك أو جمع بيانات عنك.</p>
-                    
-                    <h2>محتوى يوتيوب</h2>
-                    <p>جميع مقاطع الفيديو والموسيقى الموجودة على موقعنا تنتمي إلى قناتنا على يوتيوب. نحن لا ندعي ملكية أي محتوى لا ينتمي لنا.</p>
-                    
-                    <h2>الأمان</h2>
-                    <p>نحن نحافظ على معايير أمان عالية لحماية أي معلومات تخزن محلياً على جهازك.</p>
-                    
-                    <h2>التغييرات على السياسة</h2>
-                    <p>قد نقوم بتحديث سياسة الخصوصية هذه من وقت لآخر. سيتم نشر أي تغييرات على هذه الصفحة.</p>
-                    
-                    <h2>الاتصال بنا</h2>
-                    <p>إذا كان لديك أي أسئلة حول سياسة الخصوصية هذه، يرجى الاتصال بنا على: f90gimme@gmail.com</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Terms of Use Page -->
-        <section id="terms" class="page">
-            <div class="container">
-                <h1 class="page-title">شروط الاستخدام</h1>
-                <div class="legal-content">
-                    <p>آخر تحديث: ديسمبر 2025</p>
-                    
-                    <h2>قبول الشروط</h2>
-                    <p>باستخدامك لموقع F90 Music Studio، فإنك توافق على الالتزام بهذه الشروط والأحكام. إذا لم تكن موافقاً على أي جزء من هذه الشروط، يجب ألا تستخدم الموقع.</p>
-                    
-                    <h2>استخدام الموقع</h2>
-                    <p>الموقع مخصص للاستخدام الشخصي والغير تجاري. يجب ألا تستخدم الموقع لأي أغراض غير قانونية أو محظورة.</p>
-                    
-                    <h2>المحتوى والملكية الفكرية</h2>
-                    <p><strong>محتوى يوتيوب:</strong> جميع مقاطع الفيديو والموسيقى الموجودة على الموقع يتم بثها من يوتيوب ونحن لا ندعي ملكية هذا المحتوى.</p>
-                    <p><strong>التقييمات والتعليقات:</strong> التقييمات والتعليقات التي تضيفها تُخزن محلياً على جهازك فقط ولا تُرسل إلى خوادمنا.</p>
-                    
-                    <h2>السلوك المقبول</h2>
-                    <p>يُحظر نشر أي محتوى:</p>
-                    <ul>
-                        <li>غير قانوني أو ضار أو تهديدي</li>
-                        <li>يتضمن سباً أو تشهيراً</li>
-                        <li>ينتهك حقوق الملكية الفكرية</li>
-                        <li>يحتوي على فيروسات أو برمجيات خبيثة</li>
-                    </ul>
-                    
-                    <h2>إخلاء المسؤولية</h2>
-                    <p>نحن لا نضمن استمرارية توفر الموقع أو خلوه من الأخطاء. نحن غير مسؤولين عن أي أضرار ناتجة عن استخدام الموقع.</p>
-                    
-                    <h2>التعديلات</h2>
-                    <p>نحن نحتفظ بالحق في تعديل هذه الشروط في أي وقت. سيتم نشر التعديلات على هذه الصفحة.</p>
-                    
-                    <h2>الاتصال بنا</h2>
-                    <p>لأي استفسارات أو لمخالفات حقوق النشر، يرجى الاتصال بنا على: f90gimme@gmail.com</p>
-                    
-                    <h2>قانون الألفية للملكية الرقمية (DMCA)</h2>
-                    <p>إذا كنت تعتقد أن أي محتوى على موقعنا ينتهك حقوقك، يرجى إرسال إشعار إلى: f90gimme@gmail.com</p>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Music Player -->
-    <div class="music-player" id="music-player">
-        <div class="player-content">
-            <div class="player-info">
-                <div class="player-thumbnail" id="player-thumbnail"></div>
-                <div class="player-details">
-                    <div class="player-title" id="player-title">اختر أغنية للاستماع</div>
-                    <div class="player-artist" id="player-artist">F90 Music Studio</div>
-                </div>
-            </div>
-            
-            <div class="player-controls">
-                <button class="control-btn shuffle" id="shuffle-btn">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z" fill="currentColor"/>
-                    </svg>
-                </button>
-                <button class="control-btn previous" id="previous-btn">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" fill="currentColor"/>
-                    </svg>
-                </button>
-                <button class="control-btn play-pause" id="play-pause-btn">
-                    <svg class="play-icon" width="32" height="32" viewBox="0 0 24 24" fill="none">
-                        <path d="M8 5v14l11-7z" fill="currentColor"/>
-                    </svg>
-                    <svg class="pause-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" style="display: none;">
-                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/>
-                    </svg>
-                </button>
-                <button class="control-btn next" id="next-btn">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" fill="currentColor"/>
-                    </svg>
-                </button>
-                <button class="control-btn repeat" id="repeat-btn">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z" fill="currentColor"/>
-                    </svg>
-                </button>
-            </div>
-            
-            <div class="player-progress">
-                <span class="time-current" id="time-current">0:00</span>
-                <div class="progress-bar" id="progress-bar">
-                    <div class="progress-fill" id="progress-fill"></div>
-                    <div class="progress-handle" id="progress-handle"></div>
-                </div>
-                <span class="time-total" id="time-total">0:00</span>
-            </div>
-            
-            <div class="player-volume">
-                <button class="volume-btn" id="volume-btn">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" fill="currentColor"/>
-                    </svg>
-                </button>
-                <div class="volume-slider" id="volume-slider">
-                    <div class="volume-fill" id="volume-fill"></div>
-                    <div class="volume-handle" id="volume-handle"></div>
-                </div>
-            </div>
-            
-            <button class="youtube-btn" id="youtube-btn" style="display: none;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M21.58 7.19c-.23-.86-.91-1.54-1.77-1.77C18.25 5 12 5 12 5s-6.25 0-7.81.42c-.86.23-1.54.91-1.77 1.77C2 8.75 2 12 2 12s0 3.25.42 4.81c.23.86.91 1.54 1.77 1.77C5.75 19 12 19 12 19s6.25 0 7.81-.42c.86-.23 1.54-.91 1.77-1.77C22 15.25 22 12 22 12s0-3.25-.42-4.81zM9.5 15.5V8.5l6.5 3.5-6.5 3.5z" fill="currentColor"/>
-                </svg>
-                <span>فتح في يوتيوب</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- Install Prompt -->
-    <div class="install-prompt" id="install-prompt">
-        <div class="install-content">
-            <div class="install-icon">🎵</div>
-            <div class="install-text">
-                <h3>ثبت تطبيق F90 Music Studio</h3>
-                <p>استمتع بتجربة موسيقى أسرع وأسهل</p>
-            </div>
-            <div class="install-actions">
-                <button class="install-btn" id="install-btn">تثبيت</button>
-                <button class="install-dismiss" id="install-dismiss">لاحقاً</button>
+            <div class="track-fallback">
+                <h3>موسيقى هادئة - F90 Production</h3>
+                <p>موسيقى هادئة للاسترخاء</p>
             </div>
         </div>
     </div>
+</noscript>
 
-    <!-- Scripts -->
-    <script src="js/translations.js"></script>
-    <script src="js/youtube-proxy.js"></script>
-    <script src="js/music-player.js"></script>
-    <script src="js/ratings.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/service-worker-registration.js"></script>
-</body>
-</html>
+<style>
+.noscript-content {
+    text-align: center;
+    padding: 2rem;
+    background: #000;
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.noscript-tracks {
+    margin-top: 2rem;
+}
+
+.track-fallback {
+    background: #1a1a1a;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 8px;
+    border: 1px solid #d4af37;
+}
+</style>
