@@ -1,31 +1,106 @@
-// Enhanced YouTube API Proxy with Channel Integration
+// Enhanced YouTube API Proxy with comprehensive error handling
 class YouTubeProxy {
     constructor() {
         this.baseUrl = window.location.hostname === 'localhost' 
             ? 'http://localhost:3000/api/youtube' 
             : '/api/youtube';
         this.cache = new Map();
-        this.cacheTimeout = 5 * 60 * 1000; // 5 minutes
-        this.channelId = 'UC_x5XG1OV2P6uZZ5FSM9Ttw'; // F90 channel ID from your URL
+        this.cacheTimeout = 10 * 60 * 1000; // 10 minutes
+        this.channelId = 'UC_x5XG1OV2P6uZZ5FSM9Ttw';
+        this.apiKey = 'AIzaSyD3mvCx80XsvwrURRg2RwaD8HmOKqhYkek';
+        this.quotaExceeded = false;
+        this.retryCount = 0;
+        this.maxRetries = 3;
+        
+        this.init();
     }
 
-    // Get channel uploads playlist ID
-    async getChannelUploadsPlaylistId() {
-        const cacheKey = `channel_${this.channelId}`;
-        
-        if (this.cache.has(cacheKey)) {
-            const cached = this.cache.get(cacheKey);
-            if (Date.now() - cached.timestamp < this.cacheTimeout) {
-                return cached.data;
+    init() {
+        // Test API connectivity on load
+        this.testAPIConnection();
+    }
+
+    async testAPIConnection() {
+        try {
+            console.log('Testing YouTube API connection...');
+            const response = await fetch(`${this.baseUrl}/test`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ channelId: this.channelId })
+            });
+            
+            if (response.ok) {
+                console.log('✅ YouTube API connection successful');
+                this.loadAllContent();
+            } else {
+                console.warn('❌ YouTube API failed, using mock data');
+                this.useMockData();
             }
+        } catch (error) {
+            console.error('❌ YouTube API connection error:', error);
+            this.useMockData();
+        }
+    }
+
+    useMockData() {
+        console.log('Switching to mock data mode...');
+        this.quotaExceeded = true;
+        
+        // Load mock data immediately
+        const mockTracks = this.getMockChannelVideos();
+        const mockPlaylists = this.getMockPlaylistsData();
+        
+        window.f90App.processVideoData(mockTracks, mockPlaylists);
+        window.f90App.loadHomePageData();
+        
+        // Show user notification
+        this.showFallbackNotification();
+    }
+
+    showFallbackNotification() {
+        const notification = document.createElement('div');
+        notification.className = 'api-fallback-notification';
+        notification.innerHTML = `
+            <div class="notification-content">
+                <span>🎵</span>
+                <p>يتم عرض محتوى تجريبي حالياً</p>
+                <button onclick="this.parentElement.parentElement.remove()">✕</button>
+            </div>
+        `;
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+
+    async fetchAllChannelVideos(maxResults = 100) {
+        if (this.quotaExceeded) {
+            return this.getMockChannelVideos();
         }
 
         try {
+            const uploadsPlaylistId = await this.getChannelUploadsPlaylistId();
+            return await this.fetchPlaylistItems(uploadsPlaylistId, maxResults);
+        } catch (error) {
+            console.error('Error fetching channel videos:', error);
+            if (error.message.includes('quotaExceeded')) {
+                this.quotaExceeded = true;
+                this.useMockData();
+                return this.getMockChannelVideos();
+            }
+            return this.getMockChannelVideos();
+        }
+    }
+
+    async getChannelUploadsPlaylistId() {
+        try {
             const response = await fetch(`${this.baseUrl}/channel`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     channelId: this.channelId,
                     part: 'contentDetails'
@@ -37,55 +112,26 @@ class YouTubeProxy {
             }
 
             const data = await response.json();
-            const uploadsPlaylistId = data.items[0].contentDetails.relatedPlaylists.uploads;
-            
-            this.cache.set(cacheKey, {
-                data: uploadsPlaylistId,
-                timestamp: Date.now()
-            });
-
-            return uploadsPlaylistId;
+            return data.items[0].contentDetails.relatedPlaylists.uploads;
         } catch (error) {
-            console.error('Error fetching channel uploads playlist:', error);
-            return 'PL2FIA-SoBgYvY4B-0IDWTtKriVGPb1qnx'; // Fallback to your first playlist
+            console.error('Error fetching uploads playlist:', error);
+            return 'PL2FIA-SoBgYvY4B-0IDWTtKriVGPb1qnx'; // Fallback
         }
     }
 
-    // Fetch all channel videos
-    async fetchAllChannelVideos(maxResults = 50) {
-        try {
-            const uploadsPlaylistId = await this.getChannelUploadsPlaylistId();
-            return await this.fetchPlaylistItems(uploadsPlaylistId, maxResults);
-        } catch (error) {
-            console.error('Error fetching channel videos:', error);
-            return this.getMockChannelVideos();
-        }
-    }
-
-    // Fetch playlist items with pagination support
     async fetchPlaylistItems(playlistId, maxResults = 50) {
-        const cacheKey = `playlist_${playlistId}_${maxResults}`;
-        
-        if (this.cache.has(cacheKey)) {
-            const cached = this.cache.get(cacheKey);
-            if (Date.now() - cached.timestamp < this.cacheTimeout) {
-                return cached.data;
-            }
-        }
-
-        const allItems = [];
-        let nextPageToken = null;
-        
-        do {
-            try {
+        try {
+            const allItems = [];
+            let nextPageToken = null;
+            let remaining = maxResults;
+            
+            do {
                 const response = await fetch(`${this.baseUrl}/playlist-items`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         playlistId,
-                        maxResults: 50, // Maximum per request
+                        maxResults: Math.min(remaining, 50),
                         part: 'snippet,contentDetails',
                         pageToken: nextPageToken
                     })
@@ -99,284 +145,164 @@ class YouTubeProxy {
                 allItems.push(...data.items);
                 
                 nextPageToken = data.nextPageToken;
+                remaining -= data.items.length;
                 
-                // Limit total results
-                if (allItems.length >= maxResults) {
-                    allItems.splice(maxResults);
-                    break;
-                }
-                
-            } catch (error) {
-                console.error('Error fetching playlist page:', error);
-                break;
-            }
-        } while (nextPageToken);
+            } while (nextPageToken && remaining > 0 && allItems.length < maxResults);
 
-        // Cache the result
-        this.cache.set(cacheKey, {
-            data: allItems,
-            timestamp: Date.now()
-        });
-
-        return allItems;
-    }
-
-    // Fetch specific playlists (your existing playlists)
-    async fetchPlaylistsItems() {
-        const playlistIds = [
-            'PL2FIA-SoBgYvY4B-0IDWTtKriVGPb1qnx',
-            'PL2FIA-SoBgYtotc48ZfKSYagxMd3AMmVp',
-            'PL2FIA-SoBgYuXeLdvKXaMlRJiF3B2opAP'
-        ];
-        
-        const playlistPromises = playlistIds.map(id => this.fetchPlaylistItems(id, 50));
-        const playlistsData = await Promise.all(playlistPromises);
-        
-        return {
-            playlists: playlistIds.map((id, index) => ({
-                id,
-                title: `Playlist ${index + 1}`,
-                items: playlistsData[index] || []
-            })),
-            allItems: playlistsData.flat()
-        };
-    }
-
-    // Fetch video details
-    async fetchVideoDetails(videoIds) {
-        const cacheKey = `videos_${Array.isArray(videoIds) ? videoIds.join(',') : videoIds}`;
-        
-        if (this.cache.has(cacheKey)) {
-            const cached = this.cache.get(cacheKey);
-            if (Date.now() - cached.timestamp < this.cacheTimeout) {
-                return cached.data;
-            }
-        }
-
-        try {
-            const response = await fetch(`${this.baseUrl}/videos`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    videoIds: Array.isArray(videoIds) ? videoIds : [videoIds],
-                    part: 'snippet,contentDetails,statistics'
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            
-            this.cache.set(cacheKey, {
-                data: data.items,
-                timestamp: Date.now()
-            });
-
-            return data.items;
+            return allItems;
         } catch (error) {
-            console.error('Error fetching video details:', error);
-            return this.getMockVideoDetails(Array.isArray(videoIds) ? videoIds : [videoIds]);
+            console.error('Error fetching playlist items:', error);
+            if (error.message.includes('quotaExceeded')) {
+                this.quotaExceeded = true;
+            }
+            return this.getMockPlaylistItems(playlistId);
         }
     }
 
-    // Search videos in your channel
-    async searchChannelVideos(query, maxResults = 20) {
-        const cacheKey = `search_${query}_${maxResults}`;
-        
-        if (this.cache.has(cacheKey)) {
-            const cached = this.cache.get(cacheKey);
-            if (Date.now() - cached.timestamp < this.cacheTimeout) {
-                return cached.data;
-            }
-        }
-
-        try {
-            const response = await fetch(`${this.baseUrl}/search`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    q: query,
-                    maxResults,
-                    part: 'snippet',
-                    type: 'video',
-                    channelId: this.channelId
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            
-            this.cache.set(cacheKey, {
-                data: data.items,
-                timestamp: Date.now()
-            });
-
-            return data.items;
-        } catch (error) {
-            console.error('Error searching channel videos:', error);
-            return this.getMockSearchResults(query);
-        }
-    }
-
-    // Get channel statistics
-    async getChannelStatistics() {
-        const cacheKey = `channel_stats_${this.channelId}`;
-        
-        if (this.cache.has(cacheKey)) {
-            const cached = this.cache.get(cacheKey);
-            if (Date.now() - cached.timestamp < this.cacheTimeout) {
-                return cached.data;
-            }
-        }
-
-        try {
-            const response = await fetch(`${this.baseUrl}/channel-stats`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    channelId: this.channelId,
-                    part: 'snippet,statistics,brandingSettings'
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            const stats = data.items[0];
-            
-            this.cache.set(cacheKey, {
-                data: stats,
-                timestamp: Date.now()
-            });
-
-            return stats;
-        } catch (error) {
-            console.error('Error fetching channel statistics:', error);
-            return this.getMockChannelStats();
-        }
-    }
-
-    // Mock data for development/testing
     getMockChannelVideos() {
         return [
             {
-                id: 'video1',
+                id: 'F90_Video_1',
                 snippet: {
-                    title: 'أغنية عربية رائعة - F90 Studio Production',
-                    description: 'أحدث إنتاجات ستوديو F90 من الموسيقى العربية الحديثة',
+                    title: 'أغنية عربية حديثة - إنتاج F90 ستوديو',
+                    description: 'أحدث إنتاجاتنا من الموسيقى العربية الحديثة بجودة احترافية',
                     thumbnails: {
-                        medium: { url: 'https://via.placeholder.com/320x180/000000/d4af37?text=F90+Song+1' }
+                        medium: { url: 'https://via.placeholder.com/320x180/000000/d4af37?text=F90+أغنية+1' },
+                        high: { url: 'https://via.placeholder.com/480x360/000000/d4af37?text=F90+أغنية+1' }
                     },
-                    publishedAt: '2024-01-15T10:00:00Z'
+                    publishedAt: '2024-12-20T10:00:00Z'
                 },
-                contentDetails: { videoId: 'video1' }
+                contentDetails: { videoId: 'F90_Video_1' }
             },
             {
-                id: 'video2',
+                id: 'F90_Video_2',
                 snippet: {
-                    title: 'موسيقى هادئة للاسترخاء - F90 Music',
-                    description: 'موسيقى هادئة ومريحة من إنتاج F90 ستوديو',
+                    title: 'موسيقى هادئة للاسترخاء - F90 Music Production',
+                    description: 'موسيقى هادئة ومريحة للاسترخاء والتركيز من إنتاج F90',
                     thumbnails: {
-                        medium: { url: 'https://via.placeholder.com/320x180/1a1a1a/ffd700?text=F90+Song+2' }
+                        medium: { url: 'https://via.placeholder.com/320x180/1a1a1a/ffd700?text=F90+موسيقى+2' },
+                        high: { url: 'https://via.placeholder.com/480x360/1a1a1a/ffd700?text=F90+موسيقى+2' }
                     },
-                    publishedAt: '2024-01-10T15:30:00Z'
+                    publishedAt: '2024-12-15T15:30:00Z'
                 },
-                contentDetails: { videoId: 'video2' }
+                contentDetails: { videoId: 'F90_Video_2' }
             },
             {
-                id: 'video3',
+                id: 'F90_Video_3',
                 snippet: {
-                    title: 'أغنية وطنية عربية - F90 Production',
-                    description: 'إنتاج حديث لأغنية وطنية عربية كلاسيكية',
+                    title: 'أغنية وطنية - F90 ستوديو',
+                    description: 'إنتاج حديث لأغنية وطنية عربية كلاسيكية بصوت عالي الجودة',
                     thumbnails: {
-                        medium: { url: 'https://via.placeholder.com/320x180/2a2a2a/d4af37?text=F90+Song+3' }
+                        medium: { url: 'https://via.placeholder.com/320x180/2a2a2a/d4af37?text=F90+وطنية' },
+                        high: { url: 'https://via.placeholder.com/480x360/2a2a2a/d4af37?text=F90+وطنية' }
                     },
-                    publishedAt: '2024-01-05T20:15:00Z'
+                    publishedAt: '2024-12-10T20:15:00Z'
                 },
-                contentDetails: { videoId: 'video3' }
+                contentDetails: { videoId: 'F90_Video_3' }
+            },
+            {
+                id: 'F90_Video_4',
+                snippet: {
+                    title: 'موسيقى عربية تقليدية - F90 Production',
+                    description: 'موسيقى عربية تقليدية أصيلة بإنتاج عصري حديث',
+                    thumbnails: {
+                        medium: { url: 'https://via.placeholder.com/320x180/3a3a3a/ffa500?text=F90+تقليدي' },
+                        high: { url: 'https://via.placeholder.com/480x360/3a3a3a/ffa500?text=F90+تقليدي' }
+                    },
+                    publishedAt: '2024-12-05T12:00:00Z'
+                },
+                contentDetails: { videoId: 'F90_Video_4' }
             }
         ];
     }
 
-    getMockVideoDetails(videoIds) {
-        return videoIds.map(id => ({
-            id,
-            snippet: {
-                title: `F90 Studio Song ${id}`,
-                description: 'Professional Arabic music production by F90 Studio',
-                thumbnails: {
-                    medium: { url: `https://via.placeholder.com/320x180/000000/d4af37?text=F90+Song+${id}` }
-                }
-            },
-            contentDetails: {
-                duration: 'PT3M45S'
-            },
-            statistics: {
-                viewCount: Math.floor(Math.random() * 100000) + 10000,
-                likeCount: Math.floor(Math.random() * 5000) + 1000,
-                commentCount: Math.floor(Math.random() * 500) + 50
-            }
-        }));
-    }
-
-    getMockSearchResults(query) {
-        return [
-            {
-                id: { videoId: 'search1' },
-                snippet: {
-                    title: `نتائج البحث عن: ${query}`,
-                    description: 'نتائج البحث في قناة F90',
-                    thumbnails: {
-                        medium: { url: 'https://via.placeholder.com/320x180/000000/d4af37?text=Search+Result' }
-                    }
-                }
-            }
-        ];
-    }
-
-    getMockChannelStats() {
+    getMockPlaylistsData() {
         return {
-            snippet: {
-                title: 'F90 Music Studio',
-                description: 'ستوديو موسيقى عربي احترافي - Professional Arabic Music Studio',
-                thumbnails: {
-                    medium: { url: 'https://via.placeholder.com/320x180/000000/d4af37?text=F90+Channel' }
+            playlists: [
+                {
+                    id: 'PL2FIA-SoBgYvY4B-0IDWTtKriVGPb1qnx',
+                    title: 'أغاني عربية حديثة',
+                    items: this.getMockPlaylistItems()
+                },
+                {
+                    id: 'PL2FIA-SoBgYtotc48ZfKSYagxMd3AMmVp',
+                    title: 'موسيقى هادئة',
+                    items: this.getMockPlaylistItems()
+                },
+                {
+                    id: 'PL2FIA-SoBgYuXeLdvKXaMlRJiF3B2opAP',
+                    title: 'إنتاجات خاصة',
+                    items: this.getMockPlaylistItems()
                 }
-            },
-            statistics: {
-                viewCount: '1250000',
-                subscriberCount: '15000',
-                videoCount: '85'
-            }
+            ]
         };
     }
 
-    // Clear expired cache entries
-    clearExpiredCache() {
-        const now = Date.now();
-        for (const [key, value] of this.cache.entries()) {
-            if (now - value.timestamp > this.cacheTimeout) {
-                this.cache.delete(key);
+    getMockPlaylistItems() {
+        return [
+            {
+                id: 'Mock_1',
+                snippet: {
+                    title: 'محتوى من البلاي ليست',
+                    description: 'وصف المحتوى',
+                    thumbnails: {
+                        medium: { url: 'https://via.placeholder.com/320x180/4a4a4a/ff6347?text=Playlist' }
+                    }
+                },
+                contentDetails: { videoId: 'Mock_1' }
             }
-        }
+        ];
     }
 }
 
-// Initialize enhanced YouTube proxy
-window.youtubeProxy = new YouTubeProxy();
+// Add fallback notification styles
+const fallbackStyles = `
+.api-fallback-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #d4af37;
+    color: #000;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 10000;
+    animation: slideInRight 0.3s ease;
+}
 
-// Clear expired cache periodically
-setInterval(() => window.youtubeProxy.clearExpiredCache(), 60000);
+.api-fallback-notification .notification-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.api-fallback-notification button {
+    background: transparent;
+    border: none;
+    color: #000;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.25rem;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+[dir="rtl"] .api-fallback-notification {
+    right: auto;
+    left: 20px;
+    animation: slideInLeft 0.3s ease;
+}
+
+@keyframes slideInLeft {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+`;
+
+// Inject fallback styles
+const style = document.createElement('style');
+style.textContent = fallbackStyles;
+document.head.appendChild(style);
