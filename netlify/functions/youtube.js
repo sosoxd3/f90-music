@@ -1,7 +1,7 @@
-here// Netlify Function for secure YouTube API calls
+// Netlify Function with your YouTube API key
 const axios = require('axios');
 
-const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY; // Store in Netlify environment variables
+const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || 'AIzaSyD3mvCx80XsvwrURRg2RwaD8HmOKqhYkek'; // Your API key
 const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
 
 // CORS headers
@@ -22,45 +22,90 @@ exports.handler = async (event, context) => {
     }
 
     try {
-        const { playlistId, videoIds, q, maxResults = 20, part = 'snippet' } = JSON.parse(event.body);
+        const { playlistId, videoIds, q, maxResults = 50, part = 'snippet', channelId, pageToken } = JSON.parse(event.body);
         
         let url, params;
         
-        if (playlistId) {
-            // Fetch playlist items
+        // Channel endpoint - get channel details including uploads playlist
+        if (event.path.includes('/channel') && channelId) {
+            url = `${YOUTUBE_API_BASE}/channels`;
+            params = {
+                key: YOUTUBE_API_KEY,
+                id: channelId,
+                part: part || 'snippet,contentDetails,statistics,brandingSettings'
+            };
+        }
+        // Channel statistics
+        else if (event.path.includes('/channel-stats') && channelId) {
+            url = `${YOUTUBE_API_BASE}/channels`;
+            params = {
+                key: YOUTUBE_API_KEY,
+                id: channelId,
+                part: 'snippet,statistics,brandingSettings'
+            };
+        }
+        // Playlist items with pagination
+        else if (event.path.includes('/playlist-items') && playlistId) {
             url = `${YOUTUBE_API_BASE}/playlistItems`;
             params = {
                 key: YOUTUBE_API_KEY,
                 playlistId,
-                maxResults,
+                maxResults: Math.min(maxResults, 50), // API limit
+                part: part || 'snippet,contentDetails',
+                pageToken: pageToken || undefined
+            };
+        }
+        // Regular playlist items
+        else if (playlistId) {
+            url = `${YOUTUBE_API_BASE}/playlistItems`;
+            params = {
+                key: YOUTUBE_API_KEY,
+                playlistId,
+                maxResults: Math.min(maxResults, 50),
                 part: 'snippet,contentDetails'
             };
-        } else if (videoIds) {
-            // Fetch video details
+        }
+        // Video details
+        else if (videoIds) {
             url = `${YOUTUBE_API_BASE}/videos`;
             params = {
                 key: YOUTUBE_API_KEY,
                 id: Array.isArray(videoIds) ? videoIds.join(',') : videoIds,
-                part: 'snippet,contentDetails,statistics'
+                part: part || 'snippet,contentDetails,statistics'
             };
-        } else if (q) {
-            // Search videos
+        }
+        // Search within channel
+        else if (event.path.includes('/search') && q) {
             url = `${YOUTUBE_API_BASE}/search`;
             params = {
                 key: YOUTUBE_API_KEY,
                 q,
-                maxResults,
+                maxResults: Math.min(maxResults, 50),
                 part: 'snippet',
                 type: 'video',
-                channelId: 'UC_x5XG1OV2P6uZZ5FSM9Ttw' // F90 channel ID
+                channelId: channelId || 'UC_x5XG1OV2P6uZZ5FSM9Ttw' // F90 channel ID
             };
-        } else {
+        }
+        // Regular search
+        else if (q) {
+            url = `${YOUTUBE_API_BASE}/search`;
+            params = {
+                key: YOUTUBE_API_KEY,
+                q,
+                maxResults: Math.min(maxResults, 50),
+                part: 'snippet',
+                type: 'video'
+            };
+        }
+        else {
             return {
                 statusCode: 400,
                 headers,
                 body: JSON.stringify({ error: 'Missing required parameters' })
             };
         }
+        
+        console.log('Making YouTube API request:', { url, params: { ...params, key: '***' } });
         
         const response = await axios.get(url, { params });
         
@@ -71,14 +116,15 @@ exports.handler = async (event, context) => {
         };
         
     } catch (error) {
-        console.error('YouTube API Error:', error);
+        console.error('YouTube API Error:', error.response?.data || error.message);
         
         return {
             statusCode: error.response?.status || 500,
             headers,
             body: JSON.stringify({ 
                 error: 'Failed to fetch data from YouTube',
-                details: error.message 
+                details: error.response?.data?.error?.message || error.message,
+                quotaExceeded: error.response?.status === 403
             })
         };
     }
