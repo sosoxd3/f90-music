@@ -1,4 +1,4 @@
-// Enhanced App.js with content loading verification
+// Enhanced App.js with Diagnostic Checklist
 class F90App {
     constructor() {
         this.currentPage = 'home';
@@ -12,7 +12,37 @@ class F90App {
     }
 
     init() {
+        // 🔍 DIAGNOSTIC CHECKLIST - Add this at the very beginning
+        console.log('🔍 Running diagnostic checklist...');
+        
+        // 1. Check API Key
+        console.log('1. API Key:', 'AIzaSyD3mvCx80XsvwrURRg2RwaD8HmOKqhYkek'.length > 20 ? '✅ Present' : '❌ Missing');
+        
+        // 2. Check Channel ID
+        console.log('2. Channel ID:', 'UC_x5XG1OV2P6uZZ5FSM9Ttw' ? '✅ Set' : '❌ Missing');
+        
+        // 3. Check Service Worker
+        console.log('3. Service Worker:', 'serviceWorker' in navigator ? '✅ Supported' : '❌ Not supported');
+        
+        // 4. Check LocalStorage
+        try {
+            localStorage.setItem('test', 'test');
+            localStorage.removeItem('test');
+            console.log('4. LocalStorage: ✅ Working');
+        } catch (e) {
+            console.log('4. LocalStorage: ❌ Blocked');
+        }
+        
+        // 5. Check Fetch API
+        console.log('5. Fetch API:', typeof fetch === 'function' ? '✅ Available' : '❌ Missing');
+        
+        // 6. Check Environment
+        console.log('6. Environment:', window.location.hostname);
+        console.log('7. Protocol:', window.location.protocol);
+        console.log('8. User Agent:', navigator.userAgent.substring(0, 50) + '...');
+        
         console.log('🚀 F90 Music Studio initializing...');
+        
         this.setupNavigation();
         this.setupSearch();
         this.setupFilters();
@@ -23,137 +53,5 @@ class F90App {
         this.setupContentVerification();
     }
 
-    verifyEnvironment() {
-        console.log('🔍 Verifying environment...');
-        
-        // Check if we're in development or production
-        const isLocalhost = window.location.hostname === 'localhost' || 
-                           window.location.hostname === '127.0.0.1';
-        
-        console.log('📍 Location:', window.location.hostname);
-        console.log('🔧 Development mode:', isLocalhost);
-        
-        // Verify API endpoints
-        this.testAPIEndpoints();
-        
-        // Check for required files
-        this.checkRequiredFiles();
-    }
-
-    async testAPIEndpoints() {
-        try {
-            const response = await fetch('/api/youtube/test', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ test: true })
-            });
-            
-            console.log('🔗 API Endpoint test:', response.ok ? '✅ Working' : '❌ Failed');
-        } catch (error) {
-            console.log('🔗 API Endpoint test: ❌ Not available (using mock data)');
-        }
-    }
-
-    checkRequiredFiles() {
-        const requiredFiles = [
-            '/css/main.css',
-            '/css/fallback-styles.css',
-            '/js/translations.js',
-            '/js/youtube-proxy.js',
-            '/js/music-player.js',
-            '/js/ratings.js',
-            '/js/app.js'
-        ];
-        
-        requiredFiles.forEach(file => {
-            fetch(file, { method: 'HEAD' })
-                .then(response => {
-                    console.log(`📁 ${file}: ${response.ok ? '✅ Found' : '❌ Missing'}`);
-                })
-                .catch(() => {
-                    console.log(`📁 ${file}: ❌ Not accessible`);
-                });
-        });
-    }
-
-    setupContentVerification() {
-        // Monitor content loading
-        const observer = new MutationObserver((mutations) => {
-            this.verifyContentRendered();
-        });
-        
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-        
-        // Initial verification
-        setTimeout(() => this.verifyContentRendered(), 2000);
-        setTimeout(() => this.verifyContentRendered(), 5000);
-    }
-
-    verifyContentRendered() {
-        const tracksContainer = document.getElementById('latest-tracks');
-        const musicContainer = document.getElementById('tracks-list');
-        const hasContent = (tracksContainer && tracksContainer.children.length > 0) || 
-                          (musicContainer && musicContainer.children.length > 0);
-        
-        if (!hasContent && !this.contentLoaded) {
-            console.log('⚠️ No content detected, forcing content load...');
-            this.forceContentLoad();
-        } else if (hasContent) {
-            this.contentLoaded = true;
-            console.log('✅ Content successfully loaded');
-        }
-    }
-
-    forceContentLoad() {
-        // Emergency content loading with mock data
-        const mockTracks = this.generateMockTracks();
-        this.renderTracksGrid('latest-tracks', mockTracks);
-        this.renderTracksList('tracks-list', mockTracks);
-        
-        // Show notification
-        this.showContentNotification();
-    }
-
-    generateMockTracks() {
-        return [
-            {
-                id: 'Emergency_1',
-                snippet: {
-                    title: 'أغنية طارئة ١ - F90 Studio',
-                    description: 'محتوى طارئة للتجربة',
-                    thumbnails: {
-                        medium: { url: 'https://via.placeholder.com/320x180/000000/d4af37?text=طارئة+1' }
-                    }
-                },
-                contentDetails: { videoId: 'Emergency_1' }
-            },
-            {
-                id: 'Emergency_2',
-                snippet: {
-                    title: 'أغنية طارئة ٢ - F90 Studio',
-                    description: 'محتوى طارئة للتجربة',
-                    thumbnails: {
-                        medium: { url: 'https://via.placeholder.com/320x180/1a1a1a/ffd700?text=طارئة+2' }
-                    }
-                },
-                contentDetails: { videoId: 'Emergency_2' }
-            }
-        ];
-    }
-
-    showContentNotification() {
-        const notification = document.createElement('div');
-        notification.className = 'content-notification';
-        notification.innerHTML = `
-            <div class="notification-content">
-                <span>🎵</span>
-                <p>تم تحميل المحتوى بنجاح!</p>
-            </div>
-        `;
-        document.body.appendChild(notification);
-        
-        setTimeout(() => notification.remove(), 3000);
-    }
+    // ... rest of your existing methods ...
+}
